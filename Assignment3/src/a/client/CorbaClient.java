@@ -5,12 +5,16 @@ import client.UI.ClientGUI;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.omg.CORBA.ORB;
+import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.CosNaming.NamingContextPackage.CannotProceed;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 public class CorbaClient {
 
@@ -22,29 +26,39 @@ public class CorbaClient {
     }
 
     public void startCorbaCLient(String nameOrID) {
-        
-        String ior = "IOR:000000000000001849444C3A612E7365727665722F51756F7465723A312E3000000000010000000000000050000102000000000E3134312E32332E3130372E363500B2BA0000001F363038303139333833352F000118284A01141628100630463814141B484C1B00000000010000000000000008000000004A414300";
-        
-        org.omg.CORBA.ORB orb = org.omg.CORBA.ORB.init(args, null);
-        Quoter quoter = QuoterHelper.narrow(orb.string_to_object(ior));
+
         try {
+            Properties props = new Properties();
+            props.setProperty("org.omg.CORBA.ORBInitialPort", "22010");
+            props.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
+            props.setProperty("ORBInitRef", "NameService=http://localhost/~dafarache/NS_Ref");
+            ORB orb = ORB.init((String[])null, props);
+
+            // get the root naming context
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+
+            // resolve the Object Reference in Naming
+            Quoter quoter = QuoterHelper.narrow(ncRef.resolve_str("exerciseA"));
+
             System.out.println(quoter.getQuoteByName("SAP AG"));
-        } catch (InvalidStockName ex) {
-            System.err.println(ex);
+
+        } catch (InvalidStockName | InvalidName | CannotProceed | org.omg.CosNaming.NamingContextPackage.InvalidName | NotFound e) {
+            System.err.println(e);
         }
     }
-/*
-    public void initializeClient() {
-        client = new ClientGUI();
-        client.setVisible(true);
+    /*
+     public void initializeClient() {
+     client = new ClientGUI();
+     client.setVisible(true);
 
-        JButton textButton = client.getButton();
-        textButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nameOrID = client.getDestinationField().getText();
-                startCorbaCLient(nameOrID);
-            }
-        });
-    }*/
+     JButton textButton = client.getButton();
+     textButton.addActionListener(new ActionListener() {
+     @Override
+     public void actionPerformed(ActionEvent e) {
+     String nameOrID = client.getDestinationField().getText();
+     startCorbaCLient(nameOrID);
+     }
+     });
+     }*/
 }

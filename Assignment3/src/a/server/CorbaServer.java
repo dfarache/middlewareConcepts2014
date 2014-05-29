@@ -1,13 +1,13 @@
 package a.server;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Properties;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
+import org.omg.CosNaming.NameComponent;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.CosNaming.NamingContextPackage.CannotProceed;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
 import org.omg.PortableServer.POAPackage.ServantAlreadyActive;
 import org.omg.PortableServer.POAPackage.ServantNotActive;
@@ -17,32 +17,40 @@ public class CorbaServer {
 
     public void startCorbaServer() {
         try {
-
-            ORB orb = ORB.init((String[]) null, null);
+            Properties props = new Properties();
+            props.setProperty("org.omg.CORBA.ORBInitialPort", "22010");
+            props.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
+            props.setProperty("ORBInitRef", "NameService=http://localhost/~dafarache/NS_Ref");
+            
+            ORB orb = ORB.init((String[]) null, props);
 
             org.omg.PortableServer.POA objectAdapter
                     = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
-
             objectAdapter.the_POAManager().activate();
 
             //call the servant object 
             QuoterImpl stockQuote = new QuoterImpl();
-            objectAdapter.activate_object(stockQuote);
-            System.out.println("GET HERE");
-            org.omg.CORBA.Object o = objectAdapter.servant_to_reference(stockQuote);
-
-            PrintWriter ps = new PrintWriter(new FileOutputStream(new File("IOR_FILE")));
-            ps.println(orb.object_to_string(o));
-            ps.close();
+            //ESTO SIRVE objectAdapter.activate_object(stockQuote);??
+            
+            org.omg.CORBA.Object ref = objectAdapter.servant_to_reference(stockQuote);
+            Quoter qhelp = QuoterHelper.narrow(ref);
+            
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+            
+            NamingContextExt nContext= NamingContextExtHelper.narrow(objRef);
+            
+            String name = "exerciseA";
+            NameComponent path[] = nContext.to_name(name);
+            nContext.rebind(path, qhelp);
 
             ////////////
             System.out.println("GET HERE");
             orb.run();
 
-        } catch (InvalidName | AdapterInactive | ServantNotActive | WrongPolicy | ServantAlreadyActive ex) {
+        } catch (InvalidName | AdapterInactive | ServantNotActive | WrongPolicy ex) {
             System.err.println(ex);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(CorbaServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (org.omg.CosNaming.NamingContextPackage.InvalidName | NotFound | CannotProceed ex) {
+            System.err.println(ex);
         }
     }
 

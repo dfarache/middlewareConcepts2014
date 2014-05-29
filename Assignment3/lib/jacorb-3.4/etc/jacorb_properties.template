@@ -20,7 +20,7 @@
 
 #ORBInitRef.NameService=corbaloc::160.45.110.41:38693/NameService
 #ORBInitRef.NameService=file:/c:/NS_Ref
-ORBInitRef.NameService=NameService
+ORBInitRef.NameService=http://www.x.y.z/~user/NS_Ref
 #ORBInitRef.TradingService=http://www.x.y.z/~user/TraderRef
 ORBInitRef.InterfaceRepository=file:/c:/IR_Ref
 
