@@ -25,14 +25,14 @@ public class CorbaClient {
         this.args = Arrays.copyOf(args, args.length);
     }
 
-    public void startCorbaCLient(String nameOrID) {
+    private void startCorbaCLient(String nameOrID) {
 
         try {
             Properties props = new Properties();
             props.setProperty("org.omg.CORBA.ORBInitialPort", "22010");
             props.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
             props.setProperty("ORBInitRef", "NameService=http://localhost/~dafarache/NS_Ref");
-            ORB orb = ORB.init((String[])null, props);
+            ORB orb = ORB.init((String[]) null, props);
 
             // get the root naming context
             org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
@@ -41,24 +41,26 @@ public class CorbaClient {
             // resolve the Object Reference in Naming
             Quoter quoter = QuoterHelper.narrow(ncRef.resolve_str("exerciseA"));
 
-            System.out.println(quoter.getQuoteByName("SAP AG"));
+            
+            
+            client.getTextField().setText(String.valueOf(quoter.getQuoteByName(nameOrID)));
 
         } catch (InvalidStockName | InvalidName | CannotProceed | org.omg.CosNaming.NamingContextPackage.InvalidName | NotFound e) {
             System.err.println(e);
         }
     }
-    /*
-     public void initializeClient() {
-     client = new ClientGUI();
-     client.setVisible(true);
 
-     JButton textButton = client.getButton();
-     textButton.addActionListener(new ActionListener() {
-     @Override
-     public void actionPerformed(ActionEvent e) {
-     String nameOrID = client.getDestinationField().getText();
-     startCorbaCLient(nameOrID);
-     }
-     });
-     }*/
+    public void initializeClient() {
+        client = new ClientGUI();
+        client.setVisible(true);
+
+        JButton textButton = client.getButton();
+        textButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nameOrID = client.getDestinationField().getText();
+                startCorbaCLient(nameOrID);
+            }
+        });
+    }
 }

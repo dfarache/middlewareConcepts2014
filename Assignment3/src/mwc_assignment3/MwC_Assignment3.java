@@ -15,7 +15,7 @@ public class MwC_Assignment3 {
             if(args[1].equals("server"))
                 new a.server.CorbaServer().startCorbaServer();
             if(args[1].equals("client"))
-                new a.client.CorbaClient(args).startCorbaCLient(null);
+                new a.client.CorbaClient(args).initializeClient();
         }
     }
     

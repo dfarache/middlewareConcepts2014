@@ -24,6 +24,7 @@ public class QuoterImpl extends QuoterPOA {
 
         StockQuote stockQ = new StockQuote(null, null, -1);
         int i = 0;
+        
         for (String line : numberOfCompanies) {
             switch (i % 3) {
                 case 0:
