@@ -4,10 +4,7 @@ import QuoterPackage.InvalidStockName;
 import client.UI.ClientGUI;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
@@ -19,11 +16,6 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
 public class CorbaClient {
 
     private static ClientGUI client;
-    private final String[] args;
-
-    public CorbaClient(String[] args) {
-        this.args = Arrays.copyOf(args, args.length);
-    }
 
     private void startCorbaCLient(String nameOrID) {
 
