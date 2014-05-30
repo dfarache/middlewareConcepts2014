@@ -22,7 +22,7 @@ public class MwC_Assignment3 {
                 new a.server.CorbaServer().startCorbaServer();
             }
             if (args[1].equals("client")) {
-                new b.client.CorbaClientB().startCorbaCLient(null);
+                new b.client.CorbaClientB().initializeClient();
             }
         }
 
