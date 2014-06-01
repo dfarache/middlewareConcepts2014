@@ -67,7 +67,15 @@ public class ServerCommunicationImpl extends ServerCommunicationPOA {
     public void register_callback(String Quote_info, Responder responder) {
         map.put(responder, Quote_info);
         Quote q = getQuote(Quote_info);
-        responder.push(q);
+        try{
+            responder.push(q);
+        }catch(Exception ex){
+            q = new Quote();
+            q.price="-1";
+            q.name ="";
+            q.id="";
+            responder.push(q);
+        }
         System.out.println("Request from client");
     }
 

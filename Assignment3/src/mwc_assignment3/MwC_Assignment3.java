@@ -31,7 +31,7 @@ public class MwC_Assignment3 {
                 new c.server.CorbaServerC().startCorbaServer();
             }
             if (args[1].equals("client")) {
-                new c.client.CorbaClientC().startCorbaClient(null);
+                new c.client.CorbaClientC().startCorbaClient("SAP AG");
             }
         }
 

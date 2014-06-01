@@ -56,8 +56,8 @@ abstract public class ServerCommunicationHelper
       return null;
     else if (obj instanceof ServerCommunication)
       return (ServerCommunication)obj;
-    else if (!obj._is_a (id ()))
-      throw new org.omg.CORBA.BAD_PARAM ();
+    //else if (!obj._is_a (id ()))
+    //  throw new org.omg.CORBA.BAD_PARAM ();
     else
     {
       org.omg.CORBA.portable.Delegate delegate = ((org.omg.CORBA.portable.ObjectImpl)obj)._get_delegate ();

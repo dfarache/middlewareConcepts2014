@@ -22,12 +22,14 @@ public class CorbaServerC {
             Properties props = new Properties();
             props.setProperty("org.omg.CORBA.ORBInitialPort", "22010");
             props.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
+            props.setProperty("ORBInitRef", "NameService=http://localhost/~dafarache/NS_Ref");
             ORB orb = ORB.init((String[]) null, props);
             
             POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
             ServerCommunicationImpl servImpl = new ServerCommunicationImpl();
             rootPOA.activate_object(servImpl);
-
+            rootPOA.the_POAManager().activate();
+            
             org.omg.CORBA.Object ref = rootPOA.servant_to_reference(servImpl);
             ServerCommunication servRef = ServerCommunicationHelper.narrow(ref);
 
@@ -37,7 +39,6 @@ public class CorbaServerC {
             NameComponent[] nc = {new NameComponent("exerciseC", "")};
             ncRef.rebind(nc, servRef);
 
-            rootPOA.the_POAManager().activate();
             System.out.println("Waiting for client calls");
             orb.run();
 
