@@ -27,8 +27,6 @@ public class CorbaClientB {
 
         try {
 
-            nameOrID = "SAP AG";
-
             org.omg.CORBA.Object ncRef = orb.resolve_initial_references("NameService");
 
             NamingContext nc = NamingContextHelper.narrow(ncRef);

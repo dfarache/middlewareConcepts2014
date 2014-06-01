@@ -34,7 +34,6 @@ public class CorbaClient {
             Quoter quoter = QuoterHelper.narrow(ncRef.resolve_str("exerciseA"));
 
             
-            
             client.getTextField().setText(String.valueOf(quoter.getQuoteByName(nameOrID)));
 
         } catch (InvalidStockName | InvalidName | CannotProceed | org.omg.CosNaming.NamingContextPackage.InvalidName | NotFound e) {

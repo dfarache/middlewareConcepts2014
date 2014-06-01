@@ -29,7 +29,6 @@ public class CorbaServer {
 
             //call the servant object 
             QuoterImpl stockQuote = new QuoterImpl();
-            //ESTO SIRVE objectAdapter.activate_object(stockQuote);??
             
             org.omg.CORBA.Object ref = objectAdapter.servant_to_reference(stockQuote);
             Quoter qhelp = QuoterHelper.narrow(ref);

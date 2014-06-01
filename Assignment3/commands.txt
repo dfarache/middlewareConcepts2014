@@ -1,6 +1,4 @@
 
-nmg -ORBInitRef NameService=hostname:http://localhost/~dafarache/NS_Ref
-
 ns -Djacorb.naming.ior_filename=/home/dafarache/public_html/NS_Ref -DOAPort=22010
 
 
