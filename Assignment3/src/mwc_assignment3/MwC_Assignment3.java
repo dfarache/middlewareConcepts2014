@@ -35,6 +35,15 @@ public class MwC_Assignment3 {
             }
         }
 
+        if (args[0].equals("d")) {
+            if (args[1].equals("server")) {
+                new d.server.CorbaServerD().startCorbaServer();
+            }
+            if (args[1].equals("client")) {
+                new d.client.CorbaClientD().startCorbaClient("SAP AG");
+            }
+        }
+
     }
 
 }
