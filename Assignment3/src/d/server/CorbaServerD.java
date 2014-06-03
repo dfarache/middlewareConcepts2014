@@ -1,8 +1,8 @@
 package d.server;
 
+import StockExchangeD.Quoter;
+import StockExchangeD.QuoterHelper;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosNaming.NameComponent;
@@ -13,7 +13,6 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
 import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
-import org.omg.PortableServer.POAPackage.ServantAlreadyActive;
 import org.omg.PortableServer.POAPackage.ServantNotActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
 
@@ -37,11 +36,11 @@ public class CorbaServerD {
             org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
             NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
 
-            NameComponent path[] = ncRef.to_name("exerciseD");
+            NameComponent[] path = {new NameComponent("exerciseD", "")};
             ncRef.rebind(path, servRef);
             
             orb.run();
-        } catch (AdapterInactive | InvalidName | ServantNotActive | WrongPolicy | org.omg.CosNaming.NamingContextPackage.InvalidName | NotFound | CannotProceed ex) {
+        } catch (AdapterInactive | InvalidName | WrongPolicy | org.omg.CosNaming.NamingContextPackage.InvalidName | NotFound | CannotProceed | ServantNotActive ex) {
             System.err.println(ex);
         }
     }

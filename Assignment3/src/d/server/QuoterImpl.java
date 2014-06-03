@@ -1,6 +1,7 @@
 package d.server;
 
-import QuoterPackage.Invalid_Stock;
+import StockExchangeD.Quote;
+import StockExchangeD.QuoterPOA;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -53,8 +54,9 @@ public class QuoterImpl extends QuoterPOA {
         return ans;
     }
 
+
     @Override
-    public Quote getQuote(String quoteInfo) throws Invalid_Stock {
+    public Quote getQuote(String quoteInfo)  {
         for (Quote quote : daxCompanies) {
             if (quoteInfo.equals(quote.name) || quoteInfo.equals(quote.id)) {
                 return quote;

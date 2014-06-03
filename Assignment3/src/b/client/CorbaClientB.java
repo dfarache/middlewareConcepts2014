@@ -44,7 +44,12 @@ public class CorbaClientB {
             result.insert_float((float) 0);
             NamedValue resultVal = orb.create_named_value("result", result, org.omg.CORBA.ARG_OUT.value);
 
-            Request thisReq = objRef._create_request(null, "getQuoteByName", argList, resultVal);
+            Request thisReq;
+            if (nameOrID.substring(0, 2).equals("DE")) {
+                thisReq = objRef._create_request(null, "getQuoteByID", argList, resultVal);
+            }else{
+                thisReq = objRef._create_request(null, "getQuoteByName", argList, resultVal);
+            }
             thisReq.invoke();
 
             // Get the return value from the Request object and output results. 

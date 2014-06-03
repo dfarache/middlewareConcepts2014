@@ -1,10 +1,13 @@
 package a.client;
 
+import QuoterPackage.InvalidStockID;
 import QuoterPackage.InvalidStockName;
 import client.UI.ClientGUI;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
@@ -32,12 +35,20 @@ public class CorbaClient {
 
             // resolve the Object Reference in Naming
             Quoter quoter = QuoterHelper.narrow(ncRef.resolve_str("exerciseA"));
-
+            String price;
             
-            client.getTextField().setText(String.valueOf(quoter.getQuoteByName(nameOrID)));
+            if (nameOrID.substring(0, 2).equals("DE")) {
+                price = String.valueOf(quoter.getQuoteByID(nameOrID));
+            } else {
+                price = String.valueOf(quoter.getQuoteByName(nameOrID));
+            }
+
+            client.getTextField().setText(price);
 
         } catch (InvalidStockName | InvalidName | CannotProceed | org.omg.CosNaming.NamingContextPackage.InvalidName | NotFound e) {
             System.err.println(e);
+        } catch (InvalidStockID ex) {
+            Logger.getLogger(CorbaClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

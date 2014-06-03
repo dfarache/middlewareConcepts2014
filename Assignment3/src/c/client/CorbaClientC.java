@@ -1,10 +1,6 @@
 package c.client;
 
-import client.UI.ClientGUI;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Properties;
-import javax.swing.JButton;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosNaming.NamingContextExt;

@@ -1,8 +1,10 @@
 package d.client;
 
+import StockExchangeD.AMI_QuoterHandler;
+import StockExchangeD.Quoter;
+import StockExchangeD.QuoterHelper;
+import StockExchangeD._QuoterStub;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosNaming.NamingContextExt;
@@ -28,10 +30,11 @@ public class CorbaClientD {
 
             String name = "exerciseD";
             Quoter qRef = QuoterHelper.narrow(ncRef.resolve_str(name));
-
+            
+            reply_count++;
+            
             AMI_QuoterHandler replyHandler = new AMI_QuoterImpl("SAP AG")._this(orb);
             ((_QuoterStub) qRef).sendc_getQuote(replyHandler, "SAP AG");
-            
             
                     
             while (reply_count > 0) {
@@ -40,10 +43,9 @@ public class CorbaClientD {
                 }
             }
             
-            
 
         } catch (InvalidName | NotFound | CannotProceed | org.omg.CosNaming.NamingContextPackage.InvalidName ex) {
-            Logger.getLogger(CorbaClientD.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println(ex);
         }
     }
 }

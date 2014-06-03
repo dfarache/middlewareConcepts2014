@@ -1,5 +1,7 @@
 package d.client;
 
+import StockExchangeD.AMI_QuoterHandlerPOA;
+import StockExchangeD.Quote;
 import org.omg.Messaging.ExceptionHolder;
 
 
