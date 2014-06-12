@@ -1,20 +1,21 @@
 package stockSubscriber;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 import javax.jms.*;
 
-public class SubscribeQuote implements MessageListener {
+public class SubscribeQuote implements MessageListener, Serializable {
 
     private final String subject;
-    private final TopicSession topicSession;
-    private final QueueSession queueSession;
-    private Topic topic;
-    private TopicSubscriber topicSubscriber;
+    protected transient TopicSession topicSession;
+    protected transient QueueSession queueSession;
+    private transient Topic topic;
+    private transient TopicSubscriber topicSubscriber;
 
-    private boolean initialized;
+    private boolean printInfo;
 
     //StockQuote Parameters
     private Date stockQuoteInstant;
@@ -24,8 +25,8 @@ public class SubscribeQuote implements MessageListener {
         this.subject = subject;
         this.topicSession = topicSession;
         this.queueSession = queueSession;
-
-        this.initialized = false;
+        
+        this.printInfo = false;
     }
 
     public void setupSubscribeQuote() {
@@ -47,7 +48,7 @@ public class SubscribeQuote implements MessageListener {
             Destination dest = queueSession.createQueue("messageRequest");
             MessageProducer requestProducer = queueSession.createProducer(dest);
             requestProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-            
+
             Destination tempDest = queueSession.createTemporaryQueue();
             MessageConsumer responseConsumer = queueSession.createConsumer(tempDest);
 
@@ -79,12 +80,10 @@ public class SubscribeQuote implements MessageListener {
                 temp = textMsg.getText();
                 parseMessage(temp);
 
-                System.out.print("\n [Subscriber] " + subject + "\n\t\t");
-                System.out.printf("%.2f", stockQuoteValue);
-                System.out.println("\t\t| " + stockQuoteInstant);
-
-                if (message.getJMSType() != null && message.getJMSType().equals("Init")) {
-                    this.initialized = true;
+                if (this.printInfo) {
+                    System.out.print("\n [Subscriber] " + subject + "\n\t\t");
+                    System.out.printf("%.2f", stockQuoteValue);
+                    System.out.println("\t\t| " + stockQuoteInstant);
                 }
 
             } catch (JMSException ex) {
@@ -110,5 +109,21 @@ public class SubscribeQuote implements MessageListener {
 
     public String getSubject() {
         return this.subject;
+    }
+
+    public void setPrint(boolean printInfo) {
+        this.printInfo = printInfo;
+    }
+
+    public boolean getPrint() {
+        return this.printInfo;
+    }
+
+    public void closeTopicSubscriber() {
+        try {
+            this.topicSubscriber.close();
+        } catch (JMSException ex) {
+            System.err.println(ex);
+        }
     }
 }

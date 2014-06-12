@@ -1,7 +1,5 @@
 package stock;
 
-import java.text.SimpleDateFormat;
-
 public class Stock {
 
     private String name;

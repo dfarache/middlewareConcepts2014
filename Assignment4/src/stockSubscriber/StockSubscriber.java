@@ -1,6 +1,12 @@
 package stockSubscriber;
 
 import java.io.Console;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jms.*;
@@ -14,9 +20,9 @@ public class StockSubscriber {
     private static TopicConnection topicConn;
     private static QueueConnection queueConn;
     private static final String url = ActiveMQConnection.DEFAULT_BROKER_URL;
-       
-    private final List<SubscribeQuote>quotesSubscribed = new ArrayList<>();
-    
+
+    private List<SubscribeQuote> quotesSubscribed = new ArrayList<>();
+
     public StockSubscriber() {
         try {
             ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
@@ -30,41 +36,103 @@ public class StockSubscriber {
             System.err.println(ex);
         }
     }
-    
-    public void startSubscriber(){
+
+    public void startSubscriber() {
         String commandIntroduced;
-        
+        initAndDeserialize();
         Console cos = System.console();
-        while(true){
+        while (true) {
             commandIntroduced = cos.readLine("Command>> ");
-            if(commandIntroduced.equals("add")){
-                String idOfStock = cos.readLine("Introduce ID of stok>> ");
-                try{
+
+            if (commandIntroduced.equals("add")) {
+                String idOfStock = cos.readLine("Introduce ID of stok to add>> ");
+                try {
                     addNewStock(idOfStock);
-                }catch(StockAlreadyExistsException ex){
+                } catch (StockAlreadyExistsException ex) {
                     System.out.println("Already subscribed to that quote");
                 }
+            } else if (commandIntroduced.equals("remove")) {
+                String idOfStock = cos.readLine("Introduce ID of stok to remove>> ");
+                try {
+                    removeStock(idOfStock);
+                } catch (StockDoesNotExistException ex) {
+                    System.out.println(ex);
+                }
+            } else if (commandIntroduced.equals("p")) {
+                for (SubscribeQuote quote : quotesSubscribed) {
+                    quote.setPrint(!quote.getPrint());
+                }
+            } else if (commandIntroduced.equals("exit")) {
+                exitAndSerialize();
             }
         }
     }
-    
-    private void addNewStock(String stockId) throws StockAlreadyExistsException{       
-        for(SubscribeQuote subscription : quotesSubscribed){
-            if(subscription.getSubject().equals(stockId)){
+
+    private void addNewStock(String stockId) throws StockAlreadyExistsException {
+        for (SubscribeQuote subscription : quotesSubscribed) {
+            if (subscription.getSubject().equals(stockId)) {
                 throw new StockAlreadyExistsException("Stock already in watchlist");
             }
         }
-        System.out.println(quotesSubscribed.size());
         SubscribeQuote subscribeQuote = new SubscribeQuote(stockId, stockSubscribeSession, stockInitSession);
         quotesSubscribed.add(subscribeQuote);
-        
-        subscribeQuote.fastInit(); 
-        
+
+        subscribeQuote.fastInit();
+
         subscribeQuote.setupSubscribeQuote();
     }
-    
-    private class StockAlreadyExistsException extends Exception{
-        private StockAlreadyExistsException(String message){
+
+    private void removeStock(String stockId) throws StockDoesNotExistException {
+        Object[] x = quotesSubscribed.toArray();
+        for (Object x1 : x) {
+            SubscribeQuote subscription = (SubscribeQuote) x1;
+            System.out.println(subscription.getSubject() + "  " + stockId);
+            if (stockId.equals(subscription.getSubject())) {
+                subscription.closeTopicSubscriber();
+                quotesSubscribed.remove(subscription);
+                return;
+            }
+        }
+        throw new StockDoesNotExistException("Not subscribed to this quote");
+    }
+
+    private void exitAndSerialize() {
+        try (
+                FileOutputStream fs = new FileOutputStream("serialize.ser");
+                ObjectOutputStream os = new ObjectOutputStream(fs);) {
+            os.writeObject(quotesSubscribed);
+        } catch (IOException ex) {
+            System.err.println("Can't serialize\n\n" + ex);
+        }
+        System.exit(0);
+    }
+
+    private void initAndDeserialize() {
+        try (FileInputStream fileIn = new FileInputStream("serialize.ser");
+                ObjectInputStream in = new ObjectInputStream(fileIn);) {
+
+            quotesSubscribed = (ArrayList<SubscribeQuote>) in.readObject();
+            for (SubscribeQuote quote : quotesSubscribed) {
+                quote.topicSession = stockSubscribeSession;
+                quote.queueSession = stockInitSession;
+                quote.fastInit();
+                quote.setupSubscribeQuote();
+            }
+        } catch (java.io.IOException | ClassNotFoundException ex) {
+            System.out.println(ex);
+        }
+    }
+
+    private class StockAlreadyExistsException extends Exception {
+
+        private StockAlreadyExistsException(String message) {
+            super(message);
+        }
+    }
+
+    private class StockDoesNotExistException extends Exception {
+
+        private StockDoesNotExistException(String message) {
             super(message);
         }
     }
