@@ -16,7 +16,7 @@ import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import stock.Stock;
 
-public class StockPublisher  implements MessageListener{
+public class StockPublisher implements MessageListener {
 
     private static String url;
     private static TopicSession stockPublishSession;
@@ -27,11 +27,13 @@ public class StockPublisher  implements MessageListener{
     private final String messageRequest = "messageRequest";
     private MessageProducer messageProducer;
 
-    private final ArrayList<QuoteUpdater> updateThreadsList;
+    private final List<QuoteUpdater> updateThreadsList;
+    private final List<Stock> companies;
 
-    public StockPublisher(){
+    public StockPublisher() {
 
         updateThreadsList = new ArrayList<>();
+        companies = getCompaniesList();
 
         try {
             url = ActiveMQConnection.DEFAULT_BROKER_URL;
@@ -48,7 +50,6 @@ public class StockPublisher  implements MessageListener{
     }
 
     public void startPublish() {
-        ArrayList<Stock> companies = getCompaniesList();
         for (Stock stock : companies) {
             QuoteUpdater quoteUpdater = new QuoteUpdater(stock, stockPublishSession);
             updateThreadsList.add(quoteUpdater);
@@ -56,13 +57,13 @@ public class StockPublisher  implements MessageListener{
         }
 
         try {
-            
+
             Destination requestQueue = stockInitSession.createQueue(messageRequest);
             messageProducer = stockInitSession.createProducer(null);
             messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
             MessageConsumer requestConsumer = stockInitSession.createConsumer(requestQueue);
             requestConsumer.setMessageListener(this);
-            
+
         } catch (JMSException ex) {
             System.err.println(ex);
         }
@@ -112,7 +113,28 @@ public class StockPublisher  implements MessageListener{
 
     @Override
     public void onMessage(Message message) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            TextMessage response = stockInitSession.createTextMessage();
+            if (message instanceof TextMessage) {
+                TextMessage txtMsg = (TextMessage) message;
+                String messageText = txtMsg.getText();
+                response.setText(responseMsg(messageText));
+            }
+            response.setJMSCorrelationID(message.getJMSCorrelationID());
+            response.setJMSType("Init");
+            this.messageProducer.send(message.getJMSReplyTo(), response);
+        } catch (JMSException ex) {
+            System.err.println(ex);
+        }
+    }
+    
+    private String responseMsg(String messageText){
+        String state = null;
+        for(Stock s : companies){
+            if(s.getStockId().equals(messageText))
+                state = s.getState();
+        }
+        return state;
     }
 
     private class QuoteUpdater extends Thread {
