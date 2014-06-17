@@ -2,7 +2,6 @@ package stockSubscriber;
 
 import java.io.Console;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -58,11 +57,12 @@ public class StockSubscriber {
                 } catch (StockDoesNotExistException ex) {
                     System.out.println(ex);
                 }
-            } else if (commandIntroduced.equals("p")) {
+            } else if (commandIntroduced.equals("print")) {
                 for (SubscribeQuote quote : quotesSubscribed) {
                     quote.setPrint(!quote.getPrint());
                 }
             } else if (commandIntroduced.equals("exit")) {
+                System.out.println("serializing stocks... ");
                 exitAndSerialize();
             }
         }
@@ -86,7 +86,6 @@ public class StockSubscriber {
         Object[] x = quotesSubscribed.toArray();
         for (Object x1 : x) {
             SubscribeQuote subscription = (SubscribeQuote) x1;
-            System.out.println(subscription.getSubject() + "  " + stockId);
             if (stockId.equals(subscription.getSubject())) {
                 subscription.closeTopicSubscriber();
                 quotesSubscribed.remove(subscription);

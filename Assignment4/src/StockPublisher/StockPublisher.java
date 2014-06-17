@@ -1,6 +1,5 @@
 package StockPublisher;
 
-import java.io.Console;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -114,6 +113,10 @@ public class StockPublisher implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
+            //Initialize the temporary queue////
+            Destination tempDest = stockInitSession.createTemporaryQueue();
+            MessageProducer responseConsumer = stockInitSession.createProducer(tempDest);
+            ///////////////////////////////////
             TextMessage response = stockInitSession.createTextMessage();
             if (message instanceof TextMessage) {
                 TextMessage txtMsg = (TextMessage) message;
@@ -122,7 +125,7 @@ public class StockPublisher implements MessageListener {
             }
             response.setJMSCorrelationID(message.getJMSCorrelationID());
             response.setJMSType("Init");
-            this.messageProducer.send(message.getJMSReplyTo(), response);
+            responseConsumer.send(message.getJMSReplyTo(), response);
         } catch (JMSException ex) {
             System.err.println(ex);
         }
@@ -141,12 +144,14 @@ public class StockPublisher implements MessageListener {
 
         private final Stock stock;
         private final TopicSession topic;
-        private final PublishQuote stockPublisher;
+        private final PublishQuote stockPublisherByName;
+        private final PublishQuote stockPublisherById;
 
         public QuoteUpdater(Stock stock, TopicSession topic) {
             this.stock = stock;
             this.topic = topic;
-            this.stockPublisher = new PublishQuote(topic, stock);
+            this.stockPublisherByName = new PublishQuote(this.topic, this.stock.getStockName());
+            this.stockPublisherById = new PublishQuote(this.topic, this.stock.getStockId());
 
         }
 
@@ -182,8 +187,8 @@ public class StockPublisher implements MessageListener {
 
         private void publishQuoteToJMS(Stock stockToPublish) throws JMSException {
             double tempQuote = stockToPublish.getStockQuote();
-            stockPublisher.publishQuote(tempQuote, stockToPublish.getState());
-            stockPublisher.publishQuote(tempQuote, stockToPublish.getState());
+            stockPublisherById.publishQuote(tempQuote, stockToPublish.getState());
+            stockPublisherByName.publishQuote(tempQuote, stockToPublish.getState());
         }
 
         private int getTimeToWait() {

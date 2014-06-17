@@ -5,24 +5,24 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
-import stock.Stock;
+
 
 public class PublishQuote {
 
     private final TopicSession topicSession;
-    private final Stock stock;
+    private final String subject;
     private TextMessage message;
     private TopicPublisher topicPublisher;
 
-    public PublishQuote(TopicSession topicSession, Stock stock) {
+    public PublishQuote(TopicSession topicSession, String subject) {
         this.topicSession = topicSession;
-        this.stock = stock;
+        this.subject = subject;
         createTopic();
     }
 
     private void createTopic() {
         try {
-            Topic topic = topicSession.createTopic(stock.getStockId());
+            Topic topic = topicSession.createTopic(subject);
             topicPublisher = topicSession.createPublisher(topic);
             message = topicSession.createTextMessage();
         } catch (JMSException ex) {

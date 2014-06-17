@@ -20,6 +20,7 @@ public class SubscribeQuote implements MessageListener, Serializable {
     //StockQuote Parameters
     private Date stockQuoteInstant;
     private double stockQuoteValue;
+    private boolean odd = true;
 
     public SubscribeQuote(String subject, TopicSession topicSession, QueueSession queueSession) {
         this.subject = subject;
@@ -46,19 +47,15 @@ public class SubscribeQuote implements MessageListener, Serializable {
     public void fastInit() {
         try {
             Destination dest = queueSession.createQueue("messageRequest");
-            MessageProducer requestProducer = queueSession.createProducer(dest);
-            requestProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-            Destination tempDest = queueSession.createTemporaryQueue();
-            MessageConsumer responseConsumer = queueSession.createConsumer(tempDest);
+            MessageConsumer responseConsumer = queueSession.createConsumer(dest);
 
             responseConsumer.setMessageListener(this);
             TextMessage tempTxt = queueSession.createTextMessage();
             tempTxt.setText(subject);
-            tempTxt.setJMSReplyTo(tempDest);
+            tempTxt.setJMSReplyTo(dest);
             String correlationID = this.createRandomString();
             tempTxt.setJMSCorrelationID(correlationID);
-            requestProducer.send(tempTxt);
+            
         } catch (JMSException ex) {
             System.err.println(ex);
         }
@@ -80,11 +77,13 @@ public class SubscribeQuote implements MessageListener, Serializable {
                 temp = textMsg.getText();
                 parseMessage(temp);
 
-                if (this.printInfo) {
+                if (this.printInfo & odd) {
                     System.out.print("\n [Subscriber] " + subject + "\n\t\t");
                     System.out.printf("%.2f", stockQuoteValue);
                     System.out.println("\t\t| " + stockQuoteInstant);
+                    
                 }
+                odd = !odd;
 
             } catch (JMSException ex) {
                 System.err.println(ex);
