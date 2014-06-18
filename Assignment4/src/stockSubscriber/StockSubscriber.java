@@ -64,6 +64,9 @@ public class StockSubscriber {
             } else if (commandIntroduced.equals("exit")) {
                 System.out.println("serializing stocks... ");
                 exitAndSerialize();
+            } else{
+                System.out.println("Command not recognized. Commands accepted:\n\n"
+                        + "[add/remove/print/exit]\n\n");
             }
         }
     }
@@ -101,7 +104,7 @@ public class StockSubscriber {
                 ObjectOutputStream os = new ObjectOutputStream(fs);) {
             os.writeObject(quotesSubscribed);
         } catch (IOException ex) {
-            System.err.println("Can't serialize\n\n" + ex);
+            System.err.println("Nothing to serialize");
         }
         System.exit(0);
     }
@@ -118,7 +121,7 @@ public class StockSubscriber {
                 quote.setupSubscribeQuote();
             }
         } catch (java.io.IOException | ClassNotFoundException ex) {
-            System.out.println(ex);
+            
         }
     }
 

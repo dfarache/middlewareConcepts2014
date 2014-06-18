@@ -199,8 +199,8 @@ public class StockPublisher implements MessageListener {
         }
 
         private double getPercentageChange() {
-            double max = 0.2;
-            double min = -0.2;
+            double max = 0.2/100;
+            double min = -0.2/100;
             double random = new Random().nextDouble();
             return (random * (max - min)) + min;
         }
