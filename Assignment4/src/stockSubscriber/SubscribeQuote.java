@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 import javax.jms.*;
 
 public class SubscribeQuote implements MessageListener, Serializable {
@@ -53,19 +52,12 @@ public class SubscribeQuote implements MessageListener, Serializable {
             TextMessage tempTxt = queueSession.createTextMessage();
             tempTxt.setText(subject);
             tempTxt.setJMSReplyTo(dest);
-            String correlationID = this.createRandomString();
-            tempTxt.setJMSCorrelationID(correlationID);
             
         } catch (JMSException ex) {
             System.err.println(ex);
         }
     }
 
-    private String createRandomString() {
-        Random random = new Random(System.currentTimeMillis());
-        long randomLong = random.nextLong();
-        return Long.toHexString(randomLong);
-    }
 
     @Override
     public void onMessage(Message message) {
