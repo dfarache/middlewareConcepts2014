@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -24,15 +25,16 @@ public class Client {
 
     private void testHelloWorld() {
         File helloWorld = new File("./test_classes/TestHelloWorld.class");
-        if (helloWorld.exists()) {
-            new ServerRequest(helloWorld, null).start();
-        }
+        String methodName = "helloWorld";
+
+        new ServerRequest(helloWorld, null, methodName).start();
+
     }
-    
-    public static void main(String[]args){
-        try{
+
+    public static void main(String[] args) {
+        try {
             new Client().startClient();
-        }catch(IOException ex){
+        } catch (IOException ex) {
             System.err.println(ex);
         }
     }
@@ -41,34 +43,60 @@ public class Client {
 
         private final File file;
         private final Object object;
+        private final String methodName;
 
-        private ServerRequest(File file, Object object) {
+        private ServerRequest(File file, Object object, String methodName) {
             this.file = file;
             this.object = object;
+            this.methodName = methodName;
         }
 
         private void sendRequestToServer() {
-            try (ObjectOutputStream objout = new ObjectOutputStream(
-                    new BufferedOutputStream(socket.getOutputStream()));
-                    BufferedInputStream buffIn = new BufferedInputStream(
-                            new FileInputStream(file));) {
-
-                long fileSize = file.length();
-                //we send the parameters to the server
-                objout.writeUTF(file.getName());
-                objout.writeLong(fileSize);
+            try {
+                ObjectOutputStream objout = new ObjectOutputStream(
+                        new BufferedOutputStream(socket.getOutputStream()));
+                BufferedInputStream buffIn = new BufferedInputStream(
+                        new FileInputStream(file));
+                sendParamsToServer(objout, buffIn);
+                buffIn.close();
                 objout.flush();
-                for (int i = 0; i < fileSize; i++) {
-                    objout.write(buffIn.read());
-                }
             } catch (IOException ex) {
                 System.out.println(ex);
             }
         }
 
+        private void sendParamsToServer(ObjectOutputStream objout, BufferedInputStream buffIn) throws IOException {
+            long fileSize = file.length();
+            objout.writeUTF(file.getName());
+            objout.writeLong(fileSize);
+            objout.writeUTF(methodName);
+            objout.flush();
+            for (int i = 0; i < fileSize; i++) {
+                objout.write(buffIn.read());
+            }
+        }
+
+        private void readAnswerFromServer() {
+            try (
+                    ObjectInputStream objIn = new ObjectInputStream(
+                            new BufferedInputStream(socket.getInputStream()))) {
+                        Object answer = objIn.readObject();
+                        double price = objIn.readDouble();
+                        printRequestFromServer(answer, price);
+                    } catch (IOException | ClassNotFoundException ex) {
+                        System.err.println(ex);
+                    }
+        }
+
+        private void printRequestFromServer(Object answer, double price) {
+            System.out.println("Answer from server: " + (String) answer + "\n"
+                    + "price charged: " + price);
+        }
+
         @Override
         public void start() {
             sendRequestToServer();
+            readAnswerFromServer();
         }
     }
 }
