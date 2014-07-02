@@ -73,5 +73,4 @@ public class Job {
         String[] components = thisMethodName.split("\\.");
         return (components[components.length - 1]).replace("()", "");
     }
-
 }

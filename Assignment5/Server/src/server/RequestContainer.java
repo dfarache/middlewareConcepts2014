@@ -48,7 +48,7 @@ public class RequestContainer extends Thread {
                 processSourceCode(objInput);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.err.println(ex);
         }
     }
 
@@ -59,7 +59,7 @@ public class RequestContainer extends Thread {
             readObject(objInput);
             readParameters(objInput);
         } catch (IOException | ClassNotFoundException ex) {
-            ex.printStackTrace();
+            System.err.println(ex);
         }
     }
 
@@ -71,7 +71,7 @@ public class RequestContainer extends Thread {
             readObject(objInput);
             readParameters(objInput);
         } catch (IOException | ClassNotFoundException ex) {
-            ex.printStackTrace();
+            System.err.println(ex);
         }
     }
 
@@ -122,7 +122,7 @@ public class RequestContainer extends Thread {
             Class jobClass = Class.forName("de.tu_berlin.kbs.mwk.test." + className);
             ans = new Job(jobClass, methodName, this.object, this.parameters).executeMethod();
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
+            System.err.println(ex);
         }
         return ans;
     }
@@ -137,7 +137,7 @@ public class RequestContainer extends Thread {
             objOut.close();
             System.out.println("\n\n\n");
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.err.println(ex);
         }
     }
 

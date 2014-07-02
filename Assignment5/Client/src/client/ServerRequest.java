@@ -42,7 +42,7 @@ public class ServerRequest extends Thread {
             buffIn.close();
             objout.flush();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.err.println(ex);
         }
     }
 
@@ -95,8 +95,8 @@ public class ServerRequest extends Thread {
     }
 
     private void printRequestFromServer(Object[]answer, double price) {
-        for(int i=0;i<answer.length;i++){
-            System.out.println("Answer from server: " + (String) answer[i] );
+        for (Object answer1 : answer) {
+            System.out.println("Answer from server: " + (String) answer1);
         }
         System.out.println("price charged: " + String.format("%,4f", price));
     }
