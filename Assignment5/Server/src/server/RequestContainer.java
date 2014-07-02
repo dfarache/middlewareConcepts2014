@@ -18,11 +18,14 @@ public class RequestContainer extends Thread {
     private final double pricePerSecond;
     private Object object;
 
+    private Object[] parameters;
+
     public RequestContainer(Socket socket) {
         this.pricePerSecond = 3.2;
         this.socket = socket;
         this.initTime = System.currentTimeMillis();
         this.object = null;
+        this.parameters = null;
     }
 
     @Override
@@ -50,28 +53,30 @@ public class RequestContainer extends Thread {
     }
 
     private void processByteCode(ObjectInputStream objInput) {
-        try{
+        try {
             setMethodNameAndFileSize(objInput);
             writeRcvdFile(objInput);
             readObject(objInput);
+            readParameters(objInput);
         } catch (IOException | ClassNotFoundException ex) {
             ex.printStackTrace();
         }
     }
 
     private void processSourceCode(ObjectInputStream objInput) {
-        try{
+        try {
             setMethodNameAndFileSize(objInput);
             writeRcvdFile(objInput);
             compileJavaFile();
-            readObject(objInput);         
+            readObject(objInput);
+            readParameters(objInput);
         } catch (IOException | ClassNotFoundException ex) {
             ex.printStackTrace();
-        }      
+        }
     }
 
     private void compileJavaFile() {
-        String fileToCompile = "test_classes" + java.io.File.separator + fileName;
+        String fileToCompile = "./de/tu_berlin/kbs/mwk/test/" + java.io.File.separator + fileName;
         try {
             new MyJavaCompiler(fileToCompile).compileFile();
         } catch (MyJavaCompiler.CompilationException ex) {
@@ -81,12 +86,13 @@ public class RequestContainer extends Thread {
 
     private void setMethodNameAndFileSize(ObjectInputStream objInput) throws IOException {
         this.fileSize = objInput.readLong();
-        this.methodName = objInput.readUTF();
+        String thisName = objInput.readUTF();
+        this.methodName = (thisName.equals("none")) ? null : thisName;
     }
 
-    private void writeRcvdFile( ObjectInputStream objInput) throws IOException {
+    private void writeRcvdFile(ObjectInputStream objInput) throws IOException {
         try (BufferedOutputStream buffOut = new BufferedOutputStream(
-                new FileOutputStream("test_classes/" + fileName))) {
+                new FileOutputStream("./de/tu_berlin/kbs/mwk/test/" + fileName))) {
             System.out.println("[SERVER]: Saving file " + fileName + "....");
             for (int i = 0; i < fileSize; i++) {
                 buffOut.write(objInput.read());
@@ -98,8 +104,13 @@ public class RequestContainer extends Thread {
         if (!objInput.readBoolean()) {
             System.out.println("[SERVER] Static Method. No instance needed.");
         } else {
-            System.out.println("IMPLEMENT THIS!!!");
             this.object = objInput.readObject();
+        }
+    }
+
+    private void readParameters(ObjectInputStream objInput) throws IOException, ClassNotFoundException {
+        if (objInput.readBoolean()) {
+            this.parameters = (Object[]) objInput.readObject();
         }
     }
 
@@ -108,8 +119,8 @@ public class RequestContainer extends Thread {
         Object ans = null;
         try {
             String className = (fileName.split(".class")[0]).split(".java")[0];
-            Class jobClass = Class.forName("test_classes." + className);
-            ans = new Job(jobClass, methodName, this.object).executeMethod();    
+            Class jobClass = Class.forName("de.tu_berlin.kbs.mwk.test." + className);
+            ans = new Job(jobClass, methodName, this.object, this.parameters).executeMethod();
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }

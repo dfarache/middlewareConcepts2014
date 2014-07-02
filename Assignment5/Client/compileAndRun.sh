@@ -1,7 +1,7 @@
 
 cd ./src
 
-javac client/*.java test_classes/*.java 
+javac client/*.java ./de/tu_berlin/kbs/mwk/test/*.java
 
 java client.Client
 

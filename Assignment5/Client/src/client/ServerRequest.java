@@ -15,12 +15,15 @@ public class ServerRequest extends Thread {
     private Object object;
     private final String methodName;
     private final Socket socket;
+    
+    private final Object[]parameters;
 
-    ServerRequest(File file, Object object, String methodName, Socket socket) {
+    ServerRequest(File file, Object object, String methodName, Object[]parameters, Socket socket) {
         this.file = file;
         this.object = object;
         this.methodName = methodName;
         this.socket = socket;
+        this.parameters = parameters;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class ServerRequest extends Thread {
                     new BufferedOutputStream(socket.getOutputStream()));
             BufferedInputStream buffIn = new BufferedInputStream(
                     new FileInputStream(file));
-            sendParamsToServer(objout, buffIn);
+            sendInfoToServer(objout, buffIn);
             buffIn.close();
             objout.flush();
         } catch (IOException ex) {
@@ -43,7 +46,7 @@ public class ServerRequest extends Thread {
         }
     }
 
-    private void sendParamsToServer(ObjectOutputStream objout, BufferedInputStream buffIn) throws IOException {
+    private void sendInfoToServer(ObjectOutputStream objout, BufferedInputStream buffIn) throws IOException {
         long fileSize = file.length();
         objout.writeUTF(file.getName());
         objout.writeLong(fileSize);
@@ -53,7 +56,18 @@ public class ServerRequest extends Thread {
             objout.write(buffIn.read());
         }
         sendObject(objout);
+        sendParameters(objout);
     }
+    
+    private void sendParameters(ObjectOutputStream objout) throws IOException{
+        if (this.parameters == null) {
+            objout.writeBoolean(false);
+        } else {
+            objout.writeBoolean(true);
+            objout.writeObject(this.parameters);
+        }    
+    }
+            
 
     private void sendObject(ObjectOutputStream objout) throws IOException {
         if (this.object == null) {
@@ -68,7 +82,7 @@ public class ServerRequest extends Thread {
         try {
             ObjectInputStream objIn = new ObjectInputStream(
                     new BufferedInputStream(socket.getInputStream()));
-            Object answer = objIn.readObject();
+            Object[]answer =(Object[]) objIn.readObject();
             double price = objIn.readDouble();
             this.object = objIn.readObject();
             
@@ -80,9 +94,11 @@ public class ServerRequest extends Thread {
         }
     }
 
-    private void printRequestFromServer(Object answer, double price) {
-        System.out.println("Answer from server: " + (String) answer + "\n"
-                + "price charged: " + price);
+    private void printRequestFromServer(Object[]answer, double price) {
+        for(int i=0;i<answer.length;i++){
+            System.out.println("Answer from server: " + (String) answer[i] );
+        }
+        System.out.println("price charged: " + String.format("%,4f", price));
     }
     
     public Object getObject(){
